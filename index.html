@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>POOL RUN TRACKER</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Pool Tracker">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#002244">
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQwIiBmaWxsPSIjMDAyMjQ0Ii8+PGNpcmNsZSBjeD0iOTAiIGN5PSI4NSIgcj0iNDUiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI0MwQzBDMCIgc3Ryb2tlLXdpZHRoPSI0Ii8+PGNpcmNsZSBjeD0iOTAiIGN5PSI4NSIgcj0iOCIgZmlsbD0iI0ZGRiIvPjx0ZXh0IHg9IjkwIiB5PSIxNTUiIGZpbGw9IiNDMEMwQzAiIGZvbnQtZmFtaWx5PSJIZWx2ZXRpY2EsQXJpYWwiIGZvbnQtc2l6ZT0iMjAiIGZvbnQtd2VpZ2h0PSJib2xkIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBsZXR0ZXItc3BhY2luZz0iMiI+VFJBQ0tFUjwvdGV4dD48L3N2Zz4=">
+    <style>
+        :root { --deep-blue: #002244; --silver: #C0C0C0; --dark-silver: #8E8E8E; --white: #FFFFFF; }
+        * { box-sizing: border-box; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; margin: 0; padding: 0; }
+        body {
+            background: radial-gradient(circle at 50% 30%, #004080 0%, #002244 70%);
+            color: var(--silver); font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+            height: 100vh; height: 100dvh; overflow: hidden; text-transform: uppercase;
+            padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+        }
+        header { margin-top: 28px; text-align: center; padding-top: env(safe-area-inset-top); }
+        h1 {
+            font-size: 1.9rem; letter-spacing: 4px;
+            background: linear-gradient(to bottom, #FFFFFF 0%, #C0C0C0 50%, #8E8E8E 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5));
+        }
+        .timer { font-size: 0.75rem; letter-spacing: 2px; color: var(--dark-silver); margin-top: 5px; }
+        .stats { text-align: center; flex-grow: 1; display: flex; flex-direction: column; justify-content: center; gap: 14px; }
+        .label { font-size: 0.82rem; letter-spacing: 2px; color: var(--white); opacity: 0.7; }
+        .count { font-size: 5.2rem; font-weight: bold; color: var(--white); line-height: 1; transition: transform 0.1s ease; }
+        .count.bump { transform: scale(1.08); }
+        .best-box { border: 2px solid var(--silver); padding: 9px 28px; border-radius: 10px; background: rgba(192,192,192,0.08); }
+        .best-val { font-size: 1.9rem; color: var(--silver); transition: color 0.3s, text-shadow 0.3s; }
+        .best-val.flash { color: #FFD700; text-shadow: 0 0 20px rgba(255,215,0,0.6); }
+        .miss-btn {
+            background: none; border: 1px solid var(--dark-silver); color: var(--dark-silver);
+            padding: 9px 22px; border-radius: 5px; font-size: 0.82rem; cursor: pointer;
+            letter-spacing: 1px; text-transform: uppercase; align-self: center; margin-top: 4px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .miss-btn:active { background: rgba(255,255,255,0.05); }
+        .btn-area { margin-bottom: 28px; display: flex; flex-direction: column; align-items: center; padding-bottom: env(safe-area-inset-bottom); }
+        .big-btn {
+            width: 160px; height: 160px; border-radius: 50%; border: none;
+            background: linear-gradient(145deg, #e6e6e6, #8e8e8e);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4), inset 0 -5px 10px rgba(0,0,0,0.2);
+            font-size: 1.05rem; font-weight: bold; color: #333; cursor: pointer;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            letter-spacing: 1px; text-transform: uppercase; -webkit-tap-highlight-color: transparent;
+            transition: transform 0.1s, box-shadow 0.1s;
+        }
+        .big-btn:active { transform: scale(0.94); box-shadow: 0 5px 10px rgba(0,0,0,0.6), inset 0 2px 5px rgba(0,0,0,0.5); }
+        .nav-row { display: flex; gap: 20px; margin-top: 14px; }
+        .nav-btn {
+            background: none; border: none; color: var(--dark-silver); font-size: 0.72rem;
+            letter-spacing: 1px; cursor: pointer; text-transform: uppercase; padding: 6px 10px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .overlay {
+            display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle at 50% 30%, #003366 0%, #001122 70%);
+            z-index: 100; flex-direction: column; align-items: center; padding: 28px 24px; overflow-y: auto;
+        }
+        .overlay.active { display: flex; }
+        .overlay h2 {
+            font-size: 1.4rem; letter-spacing: 3px; margin-top: 20px; margin-bottom: 16px;
+            background: linear-gradient(to bottom, #FFFFFF 0%, #C0C0C0 50%, #8E8E8E 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .summary { display: flex; gap: 24px; margin-bottom: 16px; }
+        .mini-stat { text-align: center; }
+        .mini-label { font-size: 0.62rem; color: var(--dark-silver); letter-spacing: 2px; margin-bottom: 2px; }
+        .mini-val { font-size: 1.3rem; color: var(--white); font-weight: bold; }
+        .list { width: 100%; max-width: 320px; flex: 1; overflow-y: auto; }
+        .row { display: flex; align-items: center; padding: 9px 0; border-bottom: 1px solid rgba(192,192,192,0.12); font-size: 0.85rem; }
+        .row-rank { width: 28px; flex-shrink: 0; }
+        .row-date { color: var(--silver); flex: 1; font-size: 0.78rem; }
+        .row-score { font-weight: bold; font-size: 0.95rem; }
+        .home-btn {
+            background: none; border: 1px solid var(--silver); color: var(--silver);
+            padding: 10px 28px; border-radius: 5px; font-size: 0.82rem; cursor: pointer;
+            letter-spacing: 1px; text-transform: uppercase; margin-top: 16px;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .home-btn:active { background: rgba(255,255,255,0.05); }
+        .clear-btn {
+            background: none; border: none; color: #555; font-size: 0.65rem; cursor: pointer;
+            letter-spacing: 1px; text-transform: uppercase; margin-top: 10px; margin-bottom: 10px;
+        }
+        .empty { color: var(--dark-silver); font-size: 0.82rem; text-align: center; padding: 36px 0; letter-spacing: 1px; }
+        .gold { color: #FFD700; }
+        .silver-c { color: #C0C0C0; }
+        .bronze { color: #CD7F32; }
+        .dim { color: var(--dark-silver); }
+    </style>
+</head>
+<body>
+
+<div id="mainScreen">
+    <header>
+        <h1>POOL RUN TRACKER</h1>
+        <div class="timer" id="timer">00:00</div>
+    </header>
+    <div class="stats">
+        <div>
+            <div class="label">Current Run</div>
+            <div id="currentRun" class="count">0</div>
+        </div>
+        <div class="best-box">
+            <div class="label">Session Best</div>
+            <div id="sessionBest" class="best-val">0</div>
+        </div>
+        <button class="miss-btn" onclick="missReset()">Miss / Reset</button>
+    </div>
+    <div class="btn-area">
+        <button class="big-btn" onclick="recordShot()"><span>Record</span><span>Shot</span></button>
+        <div class="nav-row">
+            <button class="nav-btn" onclick="showHistory()">&#9776; History</button>
+            <button class="nav-btn" onclick="showTop20()">&#9734; Top 20</button>
+        </div>
+    </div>
+</div>
+
+<div class="overlay" id="historyScreen">
+    <h2>&#9776; Run History</h2>
+    <div class="summary">
+        <div class="mini-stat"><div class="mini-label">Runs</div><div class="mini-val" id="hRuns">0</div></div>
+        <div class="mini-stat"><div class="mini-label">Best</div><div class="mini-val" id="hBest">&mdash;</div></div>
+        <div class="mini-stat"><div class="mini-label">Avg</div><div class="mini-val" id="hAvg">&mdash;</div></div>
+    </div>
+    <div class="list" id="historyList"></div>
+    <button class="clear-btn" id="clearHistBtn" onclick="clearHistory()" style="display:none">Clear History</button>
+    <button class="home-btn" onclick="goHome()">&#9664; Home</button>
+    <div style="height:16px"></div>
+</div>
+
+<div class="overlay" id="top20Screen">
+    <h2>&#9734; Top 20</h2>
+    <div class="list" id="top20List"></div>
+    <button class="home-btn" onclick="goHome()">&#9664; Home</button>
+    <div style="height:16px"></div>
+</div>
+
+<script>
+    var current = 0;
+    var best = 0;
+    var runHistory = [];
+    var startTime = Date.now();
+
+    try { var saved = localStorage.getItem('poolHistory'); if (saved) runHistory = JSON.parse(saved); } catch(e) {}
+
+    setInterval(function() {
+        var s = Math.floor((Date.now() - startTime) / 1000);
+        var m = String(Math.floor(s / 60)).padStart(2, '0');
+        s = String(s % 60).padStart(2, '0');
+        document.getElementById('timer').innerText = m + ':' + s;
+    }, 1000);
+
+    function saveData() { try { localStorage.setItem('poolHistory', JSON.stringify(runHistory)); } catch(e) {} }
+
+    function recordShot() {
+        current++;
+        var el = document.getElementById('currentRun');
+        el.innerText = current;
+        el.classList.add('bump');
+        setTimeout(function() { el.classList.remove('bump'); }, 120);
+        if (current > best) {
+            best = current;
+            var bEl = document.getElementById('sessionBest');
+            bEl.innerText = best;
+            bEl.classList.add('flash');
+            setTimeout(function() { bEl.classList.remove('flash'); }, 700);
+        }
+        if (window.navigator.vibrate) window.navigator.vibrate(30);
+    }
+
+    function missReset() {
+        if (current > 0) {
+            var now = new Date();
+            runHistory.unshift({ score: current, date: now.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}), time: now.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'}) });
+            saveData();
+        }
+        current = 0;
+        document.getElementById('currentRun').innerText = '0';
+    }
+
+    function goHome() {
+        document.getElementById('historyScreen').classList.remove('active');
+        document.getElementById('top20Screen').classList.remove('active');
+    }
+
+    function showHistory() {
+        var list = document.getElementById('historyList');
+        var allBest = 0, total = 0;
+        runHistory.forEach(function(e) { if (e.score > allBest) allBest = e.score; total += e.score; });
+        document.getElementById('hRuns').innerText = runHistory.length;
+        document.getElementById('hBest').innerText = runHistory.length > 0 ? allBest : '\u2014';
+        document.getElementById('hAvg').innerText = runHistory.length > 0 ? (total / runHistory.length).toFixed(1) : '\u2014';
+        if (runHistory.length === 0) {
+            list.innerHTML = '<div class="empty">No runs yet</div>';
+            document.getElementById('clearHistBtn').style.display = 'none';
+        } else {
+            var html = '';
+            runHistory.forEach(function(e, i) {
+                html += '<div class="row"><span class="row-rank dim">' + (i+1) + '.</span><span class="row-date">' + e.date + ' ' + e.time + '</span><span class="row-score ' + (e.score === allBest ? 'gold' : '') + '">' + e.score + '</span></div>';
+            });
+            list.innerHTML = html;
+            document.getElementById('clearHistBtn').style.display = 'block';
+        }
+        document.getElementById('historyScreen').classList.add('active');
+    }
+
+    function showTop20() {
+        var sorted = runHistory.slice().sort(function(a,b) { return b.score - a.score; }).slice(0, 20);
+        var list = document.getElementById('top20List');
+        if (sorted.length === 0) {
+            list.innerHTML = '<div class="empty">No runs yet</div>';
+        } else {
+            var html = '';
+            sorted.forEach(function(e, i) {
+                var rc = i === 0 ? 'gold' : i === 1 ? 'silver-c' : i === 2 ? 'bronze' : 'dim';
+                var fw = i < 3 ? 'font-weight:bold;' : '';
+                html += '<div class="row"><span class="row-rank ' + rc + '" style="' + fw + '">' + (i+1) + '.</span><span class="row-date">' + e.date + ' ' + e.time + '</span><span class="row-score ' + (i === 0 ? 'gold' : '') + '">' + e.score + '</span></div>';
+            });
+            list.innerHTML = html;
+        }
+        document.getElementById('top20Screen').classList.add('active');
+    }
+
+    function clearHistory() { runHistory = []; saveData(); showHistory(); }
+
+    document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'hidden' && current > 0) {
+            var now = new Date();
+            runHistory.unshift({ score: current, date: now.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}), time: now.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'}) });
+            saveData();
+        }
+    });
+</script>
+</body>
+</html>
